@@ -1,0 +1,2 @@
+# Go - Eraspace Log
+- todo
