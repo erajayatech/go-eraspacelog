@@ -1,2 +1,5 @@
 # Go - Eraspace Log
-- todo
+- todo docs
+
+### Example
+- please see in directory example

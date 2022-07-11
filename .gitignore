@@ -9,7 +9,8 @@ _test
 
 # Architecture specific extensions/prefixes
 *.[568vq]
-[568vq].out
+*.out
+coverage.html
 
 *.cgo1.go
 *.cgo2.c
@@ -28,3 +29,4 @@ coverage.txt
 vendor/
 .idea/
 release.sh
+.env
