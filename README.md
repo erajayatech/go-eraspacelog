@@ -1,7 +1,6 @@
 # Go - Eraspace Log
 
 ### Setting configuration .env
-# Log settings
 ```
 LOG_ENDPOINT=https://app.scalyr.com/api/uploadLogs?token=
 LOG_TOKEN=xxxxxx
