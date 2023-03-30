@@ -58,7 +58,7 @@ func Error(ctx *gin.Context) {
 	eraspacelog.New().LogWithTrace("ERROR",
 		fmt.Sprintf("%v", ctx.Value("x-trace-id")),
 		map[string]interface{}{
-			"function": "CatalogByCategory",
+			"function": "Error",
 			"message":  errorMessage,
 		})
 
