@@ -1,5 +1,11 @@
 # Go - Eraspace Log
 
+### Installation
+As a library
+```shell
+go get github.com/erajayatech/go-eraspacelog
+```
+
 ### Setting configuration .env
 ```
 LOG_ENDPOINT=https://app.scalyr.com/api/uploadLogs?token=
