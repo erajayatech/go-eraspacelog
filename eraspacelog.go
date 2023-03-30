@@ -80,6 +80,7 @@ func (service *Service) Print(logType string, messages interface{}) {
 }
 
 // http call to scalyr
+// this func must running using go routine
 func (service *Service) logMessage(message string) {
 	switch service.config.logProvider {
 	case "scalyr":
