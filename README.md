@@ -1,100 +1,105 @@
-# Go - Eraspace Log
+# go-eraspacelog
+
+## Getting Started
+
+eraspacelog is a structured logger for Go (golang), completely API compatible with the standard library logger.
+
+## Dependency
+* [Gin Web Framework](https://github.com/gin-gonic/gin)
+* [Logrus](https://github.com/sirupsen/logrus)
+* [Open Telemetry](https://pkg.go.dev/go.opentelemetry.io/otel)
+* [GoDotEnv by joho](https://github.com/joho/godotenv)
 
 ### Installation
-As a library
+Go Version 1.16+
 ```shell
 go get github.com/erajayatech/go-eraspacelog
 ```
+## Setup Environment
+- Set the following environment variables:
 
-### Setting configuration .env
-```
-LOG_ENDPOINT=https://app.scalyr.com/api/uploadLogs?token=
-LOG_TOKEN=xxxxxx
-LOG_FILE=yourserviceLog
-LOG_PARSER=yourparserName
-LOG_PROVIDER=scalyr
-```
+* `MODE=<your_application_mode>`
+  * Example : `prod`
 
-### Inject to middleware
-```
-func TraceMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		uuid, _ := uuid.NewV4()
-		traceID := uuid.String()
+## How To Use
+- First you need to import go-eraspacelog package for using eraspacelog, one simplest example likes the follow
 
-		// set trace id to header and to the context gin
-		ctx.Header("x-trace-id", traceID)
-		ctx.Set("x-trace-id", traceID)
+```go
+package main
 
-		ctx.Next()
-	}
-}
-```
+import (
+  "github.com/erajayatech/go-eraspacelog"
+)
 
-### Sample log message / log message with trace
-```
-func Hello(ctx *gin.Context) {
-	// log print console
-	eraspacelog.New().Print("INFO", map[string]interface{}{
-		"function": "Hello",
-		"message":  "this message will show in terminal",
-	})
-
-	// log message
-	eraspacelog.New().Log("INFO", map[string]interface{}{
-		"function": "Hello",
-		"message":  "just a message",
-	})
-
-	// log with trace id
-	eraspacelog.New().LogWithTrace("INFO",
-		fmt.Sprintf("%v", ctx.Value("x-trace-id")),
-		map[string]interface{}{
-			"function": "Hello",
-			"message":  "hello bro",
-		})
-
-	ctx.JSON(200, gin.H{
-		"status":   "OK",
-		"message":  "Hello bro!",
-		"trace_id": fmt.Sprintf("%v", ctx.Value("x-trace-id")),
-	})
-}
-```
-
-### sample error with trace id
-```
-func Error(ctx *gin.Context) {
-	errorMessage := "something went wrong"
-
-	eraspacelog.New().LogWithTrace("ERROR",
-		fmt.Sprintf("%v", ctx.Value("x-trace-id")),
-		map[string]interface{}{
-			"function": "Error",
-			"message":  errorMessage,
-		})
-
-	ctx.JSON(200, gin.H{
-		"status":   "ERROR",
-		"message":  errorMessage,
-		"trace_id": fmt.Sprintf("%v", ctx.Value("x-trace-id")),
-	})
-}
-```
-
-#### Sample main function
-```
 func main() {
-	app := gin.Default()
+ ...
+ eraspacelog.SetupLogger(helper.GetEnv("MODE"))
 
-	// route
-	apiv1 := app.Group("/v1", TraceMiddleware())
-	{
-		apiv1.GET("/hello", Hello)
-		apiv1.GET("/error", Error)
-	}
+// your code goes here
 }
 ```
+`SetupLogger()` need paramater `mode` for determine formater to print into your terminal.
+#### Example local mode
+with local mode you'll see nicely color-coded
+![Colored](https://i.ibb.co/HCTj2tz/log.png)
 
-### Example
-- please see in directory example
+#### Example development mode
+with development mode you'll see json
+![raw](https://i.ibb.co/0J1FJCg/log-raw.png)
+
+## Set auth-header and request-header
+- Before implementation logger to every single function on your application, you must set the auth-header and request-header into a middleware.
+
+#### Example set auth-header
+to set auth-header, just call `SetAuthHeaderInfoToContext()`
+
+```go
+package middleware
+
+import (
+  "github.com/erajayatech/go-eraspacelog"
+)
+
+func (middleware *Middleware) HeaderValidatorMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		source := context.Request.Header.Get("Source")
+		
+		eraspacelog.SetAuthHeaderInfoToContext(context, eraspacelog.AuthHeaderInfo{
+			"source":        source,
+		})
+	}
+}
+
+// your code goes here
+```
+
+#### Example set request-header
+to set request-header, just call `SetAuthHeaderInfoToContext()`
+
+```go
+package middleware
+
+import (
+	"github.com/erajayatech/go-eraspacelog"
+	"github.com/gin-gonic/gin"
+)
+
+func (middleware *Middleware) TraceMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		var traceID = helper.GenerateUUID()
+
+		context.Header("X-Trace-Id", traceID)
+		context.Set("X-Trace-Id", traceID)
+		context.Set("traceID", traceID)
+
+		eraspacelog.SetRequestHeaderInfoToContext(context, eraspacelog.RequestHeaderInfo{
+			"request_id": traceID,
+			"path":       fmt.Sprintf("%s %s", context.Request.Method, context.Request.URL.Path),
+		})
+
+		context.Next()
+	}
+}
+
+// your code goes here
+```
