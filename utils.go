@@ -1,6 +1,7 @@
 package eraspacelog
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 
@@ -20,4 +21,22 @@ func GetEnv(key string, defaultValue interface{}) string {
 	}
 
 	return value
+}
+
+func Dump(i interface{}) string {
+	return string(ToByte(i))
+}
+
+func ToByte(i interface{}) []byte {
+	byte_, _ := JSONMarshal(i)
+	return byte_
+}
+
+func JSONMarshal(data interface{}) ([]byte, error) {
+	result, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
