@@ -49,8 +49,14 @@ func (h *OtelTraceHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 
-	entry.Data[requestHeaderKey] = GetRequestHeaderInfoFromContext(entry.Context)
-	entry.Data[authHeaderKey] = GetAuthHeaderInfoFromContext(entry.Context)
+	reqHeader := GetRequestHeaderInfoFromContext(entry.Context)
+	if reqHeader != nil {
+		entry.Data[requestHeaderKey] = reqHeader
+	}
+	authHeader := GetAuthHeaderInfoFromContext(entry.Context)
+	if authHeader != nil {
+		entry.Data[authHeaderKey] = authHeader
+	}
 
 	span := otel.SpanFromContext(entry.Context)
 	if !span.IsRecording() {
