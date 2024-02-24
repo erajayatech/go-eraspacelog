@@ -1,18 +1,13 @@
 package eraspacelog
 
 import (
-	"context"
 	"os"
 
 	"github.com/sirupsen/logrus"
 )
 
-var eraspaceLog *logrus.Logger
-
-type Fields = logrus.Fields
-
 func SetupLogger(env string) {
-	loger := logrus.New()
+	logrus.New()
 
 	formatter := Formatter{
 		ChildFormatter: &logrus.JSONFormatter{},
@@ -31,9 +26,9 @@ func SetupLogger(env string) {
 		}
 	}
 
-	loger.SetFormatter(&formatter)
-	loger.SetOutput(os.Stdout)
-	loger.SetLevel(logrus.InfoLevel)
+	logrus.SetFormatter(&formatter)
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
 
 	otelHook := NewOtelTraceHook(&TraceHookConfig{
 		RecordStackTraceInSpan: true,
@@ -41,10 +36,5 @@ func SetupLogger(env string) {
 		ErrorSpanLevel:         logrus.ErrorLevel,
 	})
 
-	eraspaceLog = loger
-	eraspaceLog.AddHook(otelHook)
-}
-
-func WithContext(ctx context.Context, field map[string]interface{}) *logrus.Entry {
-	return eraspaceLog.WithContext(ctx).WithFields(field)
+	logrus.AddHook(otelHook)
 }
